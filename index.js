@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { CHAPTER, MINDELAY, MAXDELAY, URL } = require('./constants');
+const { CHAPTER, MINDELAY, MAXDELAY, URL, LOADING_URL } = require('./constants');
 const { timeout } = require('puppeteer');
 
 (async () => {
@@ -51,18 +51,21 @@ async function chapterHandler(webPage) {
   }
 
   try {
-    const pagesGrid = await webPage.waitForSelector('#scansPlacement', { timeout: randomDelay() });
-    
-    const pages = await pagesGrid.$$('img');
-    console.log(pages);
+    await webPage.waitForSelector('#scansPlacement', { timeout: randomDelay() });
 
+    await webPage.waitForFunction(
+      url => !Array.from(document.querySelectorAll('img')).some(img => img.src === url),
+      {},
+      LOADING_URL
+    );
 
-    for (const img of pages) {
-      const src = await img.getProperty('src');
-      console.log('Source de l\'image:', src.jsonValue());
-    }
+    const imageUrls = await webPage.evaluate(() => {
+      const images = document.querySelectorAll('#scansPlacement img');
+      return Array.from(images).map(img => img.src);
+    });
 
-    
+    console.log('🔍 Scans trouvé...');
+
   } catch (error) {
     console.log('🛑 No pages found → Error: ', error);
   }
