@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 const { CHAPTER, MINDELAY, MAXDELAY, URL, LOADING_URL } = require('./constants');
-const { timeout } = require('puppeteer');
+const path = require('path');
 
 (async () => {
 
@@ -15,6 +15,7 @@ const { timeout } = require('puppeteer');
 
   await webPage.goto(URL);
 
+  downloadImages();
 
   await initJunkTabDetector(browser);
 
@@ -59,12 +60,17 @@ async function chapterHandler(webPage) {
       LOADING_URL
     );
 
-    const imageUrls = await webPage.evaluate(() => {
+    const listImageURL = await webPage.evaluate(() => {
       const images = document.querySelectorAll('#scansPlacement img');
       return Array.from(images).map(img => img.src);
     });
 
     console.log('🔍 Scans trouvé...');
+
+    for (imageURL in listImageURL) {
+      console.log(value);
+    }
+
 
   } catch (error) {
     console.log('🛑 No pages found → Error: ', error);
@@ -73,8 +79,9 @@ async function chapterHandler(webPage) {
 
 }
 
-async function getImageURL(webPage, page) {
-
+async function downloadImages() {
+  const absosultePath = path.resolve(__dirname);
+  console.log('📂 Images will be saved in: ', absosultePath);
 }
 
 function randomDelay() {
