@@ -1,6 +1,9 @@
 const puppeteer = require('puppeteer');
-const { CHAPTER, MINDELAY, MAXDELAY, URL, LOADING_URL } = require('./constants');
 const path = require('path');
+const axios = require('axios');
+const fs = require('fs');
+const { CHAPTER, MINDELAY, MAXDELAY, URL, LOADING_URL } = require('./constants');
+
 
 (async () => {
 
@@ -15,16 +18,11 @@ const path = require('path');
 
   await webPage.goto(URL);
 
-  downloadImages();
-
   await initJunkTabDetector(browser);
 
   await cookiesPopupHandler(webPage);
 
   await chapterHandler(webPage);
-
-
-
 
 })();
 
@@ -65,10 +63,8 @@ async function chapterHandler(webPage) {
       return Array.from(images).map(img => img.src);
     });
 
-    console.log('🔍 Scans trouvé...');
-
-    for (imageURL in listImageURL) {
-      console.log(value);
+    for (const urlImg of listImageURL) {
+      await downloadImage(urlImg);
     }
 
 
@@ -76,16 +72,42 @@ async function chapterHandler(webPage) {
     console.log('🛑 No pages found → Error: ', error);
   }
 
-
 }
 
-async function downloadImages() {
-  const absosultePath = path.resolve(__dirname);
-  console.log('📂 Images will be saved in: ', absosultePath);
+async function downloadImage(urlImg) {
+  const absolutePath = path.resolve(__dirname);
+  const fileName = namingFile(urlImg);
+  axios({
+    method: 'get',
+    url: urlImg,
+    responseType: 'stream'
+  })
+    .then(function (response) {
+      response.data.pipe(fs.createWriteStream(fileName));
+      console.log('✅ Image downloaded');
+    });
+
 }
 
 function randomDelay() {
   return Math.floor(Math.random() * (MAXDELAY - MINDELAY + 1) + MINDELAY);
+}
+
+function namingFile(urlImg) {
+  const regex = /\/(\d+)\/(\d+)\.jpg$/;
+  const match = urlImg.match(regex);
+
+  if (match) {
+    const chapter = match[1];
+    const page = match[2];
+    const result = `${chapter}-${page}`;
+    const resultWExtension = `${result}.jpg`;
+    return resultWExtension;
+
+  } else {
+    console.log("🛑 Error in naming file");
+
+  }
 }
 
 async function initJunkTabDetector(browser) {
