@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
 const axios = require('axios');
-const fs = require('fs');
+const fs = require('fs-extra');
 const JSZip = require('jszip');
 const { CHAPTER, MINDELAY, MAXDELAY, URL, LOADING_URL } = require('./constants');
 
@@ -14,9 +14,9 @@ const { CHAPTER, MINDELAY, MAXDELAY, URL, LOADING_URL } = require('./constants')
     args: ['--window-size=1080,1080']
   });
   const webPage = await browser.newPage();
-  await webPage.setViewport({ width: 1080, height: 1080 });
 
-
+  const imagePath = await findImagesPath();
+  await createCBZ(imagePath, `./Chapter-${CHAPTER}.zip`);
   await webPage.goto(URL);
 
   await initJunkTabDetector(browser);
@@ -85,7 +85,7 @@ async function downloadImage(urlImg) {
     responseType: 'stream'
   })
     .then(function (response) {
-      response.data.pipe(fs.createWriteStream(path.join(absolutePath,fileName)));
+      response.data.pipe(fs.createWriteStream(path.join(absolutePath, fileName)));
       console.log('✅ Image downloaded');
     });
 
@@ -124,6 +124,27 @@ async function createNewFolder() {
   } catch (error) {
     console.log('🛑 Error creating folder → Error: ', error);
   }
+}
+
+async function createCBZ(images, pathDestination) {
+  const zip = new JSZip();
+
+  for(const image of images) {
+    const data = fs.readFile(image);
+    const fileName = path.basename(image);
+    zip.file(fileName, data);
+  }
+
+  const content = await zip.generateAsync({ type: 'nodebuffer' });
+  await fs.writeFile(pathDestination, content);
+
+}
+
+async function findImagesPath() {
+  const folderName = `Chapter-${CHAPTER}`;
+  const files = fs.readdirSync(folderName);
+  const images = files.filter(file => file.endsWith('.jpg'));
+  return images.map(image => path.join(folderName, image));
 }
 
 async function initJunkTabDetector(browser) {
