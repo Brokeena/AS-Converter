@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
+const JSZip = require('jszip');
 const { CHAPTER, MINDELAY, MAXDELAY, URL, LOADING_URL } = require('./constants');
 
 
@@ -63,6 +64,7 @@ async function chapterHandler(webPage) {
       return Array.from(images).map(img => img.src);
     });
 
+    await createNewFolder();
     for (const urlImg of listImageURL) {
       await downloadImage(urlImg);
     }
@@ -75,7 +77,7 @@ async function chapterHandler(webPage) {
 }
 
 async function downloadImage(urlImg) {
-  const absolutePath = path.resolve(__dirname);
+  const absolutePath = path.resolve(__dirname, `Chapter-${CHAPTER}`);
   const fileName = namingFile(urlImg);
   axios({
     method: 'get',
@@ -83,7 +85,7 @@ async function downloadImage(urlImg) {
     responseType: 'stream'
   })
     .then(function (response) {
-      response.data.pipe(fs.createWriteStream(fileName));
+      response.data.pipe(fs.createWriteStream(path.join(absolutePath,fileName)));
       console.log('✅ Image downloaded');
     });
 
@@ -107,6 +109,20 @@ function namingFile(urlImg) {
   } else {
     console.log("🛑 Error in naming file");
 
+  }
+}
+
+async function createNewFolder() {
+  const folderName = `Chapter-${CHAPTER}`;
+
+  try {
+    if (!fs.existsSync(folderName)) {
+      fs.mkdirSync(folderName);
+    } else {
+      console.log('🛑 Folder already exists');
+    }
+  } catch (error) {
+    console.log('🛑 Error creating folder → Error: ', error);
   }
 }
 
