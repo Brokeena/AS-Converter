@@ -15,8 +15,9 @@ const { CHAPTER, MINDELAY, MAXDELAY, URL, LOADING_URL } = require('./constants')
   });
   const webPage = await browser.newPage();
 
-  const imagePath = await findImagesPath();
-  await createCBZ(imagePath, `./Chapter-${CHAPTER}.zip`);
+  
+  await createCBZ(`./Chapter-${CHAPTER}.cbz`);
+
   await webPage.goto(URL);
 
   await initJunkTabDetector(browser);
@@ -70,6 +71,8 @@ async function chapterHandler(webPage) {
     }
 
 
+
+
   } catch (error) {
     console.log('🛑 No pages found → Error: ', error);
   }
@@ -86,7 +89,7 @@ async function downloadImage(urlImg) {
   })
     .then(function (response) {
       response.data.pipe(fs.createWriteStream(path.join(absolutePath, fileName)));
-      console.log('✅ Image downloaded');
+      console.log('✅ Image : ' + fileName + ' downloaded');
     });
 
 }
@@ -126,7 +129,9 @@ async function createNewFolder() {
   }
 }
 
-async function createCBZ(images, pathDestination) {
+async function createCBZ(pathDestination) {
+  const images = await findImagesPath();
+
   const zip = new JSZip();
 
   for(const image of images) {
