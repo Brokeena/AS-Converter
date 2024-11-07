@@ -8,7 +8,7 @@ module.exports = {
   MINDELAY: 750,
   MAXDELAY: 2000,
   
-  CHAPTER: 42,
+  CHAPTER: 14,
 
   START_CHAPTER: 1,
   END_CHAPTER: 42
