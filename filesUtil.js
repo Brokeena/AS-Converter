@@ -1,10 +1,11 @@
 const fs = require('fs-extra');
 const axios = require('axios');
 const path = require('path');
-const { CHAPTER } = require('./constants');
+const JSZip = require('jszip');
+const { NAME_FOLDER } = require('./constants');
 
 async function createNewFolder() {
-    const folderName = `Chapter-${CHAPTER}`;
+    const folderName = NAME_FOLDER;
   
     try {
       if (!fs.existsSync(folderName)) {
@@ -18,17 +19,24 @@ async function createNewFolder() {
 }
 
 async function downloadImage(urlImg) {
-  const absolutePath = path.resolve(__dirname, `Chapter-${CHAPTER}`);
+  const absolutePath = path.resolve(__dirname, NAME_FOLDER);
   const fileName = namingFile(urlImg);
-  axios({
-    method: 'get',
-    url: urlImg,
-    responseType: 'stream'
-  })
-    .then(function (response) {
-      response.data.pipe(fs.createWriteStream(path.join(absolutePath, fileName)));
-      console.log('✅ Image : ' + fileName + ' downloaded');
+  return new Promise((resolve, reject) => {
+    axios({
+      method: 'get',
+      url: urlImg,
+      responseType: 'stream'
+    })
+      .then(function (response) {
+        const writer = fs.createWriteStream(path.join(absolutePath, fileName));
+        response.data.pipe(writer);
+        writer.on('finish', () => { 
+          console.log('✅ Image : ' + fileName + ' downloaded');
+          resolve();
+        });
     });
+  });
+  
 
 }
 
@@ -39,7 +47,8 @@ async function createCBZ(pathDestination) {
     const zip = new JSZip();
   
     for(const image of images) {
-      const data = fs.readFile(image);
+      console.log(`Ajout de l'image : ${image}`);
+      const data = await fs.readFile(image);
       const fileName = path.basename(image);
       zip.file(fileName, data);
     }
@@ -55,7 +64,7 @@ module.exports = {
 }
 
 async function findImagesPath() {
-    const folderName = `Chapter-${CHAPTER}`;
+    const folderName = NAME_FOLDER;
     const files = fs.readdirSync(folderName);
     const images = files.filter(file => file.endsWith('.jpg'));
     return images.map(image => path.join(folderName, image));

@@ -27,7 +27,7 @@ async function cookiesPopupHandler(webPage) {
     }
 }
 
-async function chapterHandler(webPage) {
+async function chapterHandler(webPage, CHAPTER) {
     try {
       const chapterSelector = "Chapitre " + CHAPTER.toString();
       await webPage.select('#selectChapitres', chapterSelector);
@@ -49,7 +49,6 @@ async function chapterHandler(webPage) {
         return Array.from(images).map(img => img.src);
       });
   
-      await createNewFolder();
       for (const urlImg of listImageURL) {
         await downloadImage(urlImg);
       }
