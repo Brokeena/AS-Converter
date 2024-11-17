@@ -1,6 +1,8 @@
 # 🔀 AS-Converter
 
-<center> <img src="https://comicbook.com/wp-content/uploads/sites/4/2024/10/Dragon-Ball-Daima-Goku.jpg?w=1200" alt="drawing" width="500"/> </center>
+<p align="center">
+  <img src="https://example.com/image.png" alt="Example Image" />
+</p>
 
 ## 📖 Table of content
 
