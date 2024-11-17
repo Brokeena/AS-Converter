@@ -6,12 +6,12 @@
 
 ## 📖 Table of content
 
-- [About](#about-this-project)
-- [Built with](#built-with)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Roadmap](#roadmap)
-- [Legal stuff](#legal_stuff)
+- About
+- Built with
+- Installation
+- Usage
+- Roadmap
+- Legal Stuff
 
 
 ## ℹ️ About this project
